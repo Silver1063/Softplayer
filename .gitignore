@@ -32,3 +32,5 @@
 *.app
 
 subprojects/
+build/
+imgui.ini
