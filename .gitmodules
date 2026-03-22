@@ -1,0 +1,27 @@
+[submodule "thirdparty/SDL"]
+	path = thirdparty/SDL
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "thirdparty/imgui"]
+	path = thirdparty/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "thirdparty/angelscript"]
+	path = thirdparty/angelscript
+	url = https://github.com/anjo76/angelscript.git
+[submodule "thirdparty/RmlUi"]
+	path = thirdparty/RmlUi
+	url = https://github.com/mikke89/RmlUi.git
+[submodule "thirdparty/freetype"]
+	path = thirdparty/freetype
+	url = https://github.com/freetype/freetype.git
+[submodule "thirdparty/compressonator"]
+	path = thirdparty/compressonator
+	url = https://github.com/GPUOpen-Tools/compressonator.git
+[submodule "thirdparty/SDL_shadercross"]
+	path = thirdparty/SDL_shadercross
+	url = https://github.com/libsdl-org/SDL_shadercross.git
+[submodule "thirdparty/SDL_image"]
+	path = thirdparty/SDL_image
+	url = https://github.com/libsdl-org/SDL_image.git
+[submodule "thirdparty/SDL_mixer"]
+	path = thirdparty/SDL_mixer
+	url = https://github.com/libsdl-org/SDL_mixer.git
