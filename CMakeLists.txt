@@ -1,4 +1,6 @@
-set(CMAKE_TOOLCHAIN_FILE "C:/Users/Edward/scoop/apps/vcpkg/current/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+endif()
 
 cmake_minimum_required(VERSION 3.20)
 project(Softplayer)
@@ -30,6 +32,8 @@ add_library(Angelscript::addons ALIAS angelscript_addons)
 
 find_package(imgui CONFIG REQUIRED)
 
+find_package(fastgltf CONFIG REQUIRED)
+
 # Softplayer sources
 set(SOFTPLAYER_SOURCES
     src/main.cpp
@@ -49,4 +53,5 @@ target_link_libraries(Softplayer PRIVATE
     SDL3_shadercross::SDL3_shadercross
     imgui::imgui
     Angelscript::angelscript
-    Angelscript::addons)
+    Angelscript::addons
+    fastgltf::fastgltf)
