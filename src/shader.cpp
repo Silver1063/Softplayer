@@ -20,6 +20,9 @@ struct VertexInput {
     float2 uv : TEXCOORD0;
 };
 
+Texture2D g_texture : register(t0);
+SamplerState g_sampler : register(s0);
+
 float4 vertex(VertexInput input) : SV_Position
 {
     return float4(input.position, 1.0);
@@ -28,15 +31,32 @@ float4 vertex(VertexInput input) : SV_Position
 	SDL_ShaderCross_HLSL_Info hlsl_info{ hlsl_src, "vertex", nullptr, nullptr, SDL_SHADERCROSS_SHADERSTAGE_VERTEX, 0 };
 
 	usize bytecode_size;
-	const u8 *bytecode = (u8 *)SDL_ShaderCross_CompileSPIRVFromHLSL(&hlsl_info, &bytecode_size);
+	void *bytecode = SDL_ShaderCross_CompileSPIRVFromHLSL(&hlsl_info, &bytecode_size);
 
-	SDL_ShaderCross_SPIRV_Info spirv_info{ bytecode, bytecode_size, "vertex", SDL_SHADERCROSS_SHADERSTAGE_VERTEX, 0 };
+	if (!bytecode) {
+		SDL_Log("HLSL compilation failed: %s", SDL_GetError());
+		SDL_ShaderCross_Quit();
+		return;
+	}
 
-	SDL_ShaderCross_GraphicsShaderMetadata *metadata = SDL_ShaderCross_ReflectGraphicsSPIRV(bytecode, bytecode_size, 0);
+	SDL_ShaderCross_SPIRV_Info spirv_info{ (u8 *)bytecode, bytecode_size, "vertex", SDL_SHADERCROSS_SHADERSTAGE_VERTEX, 0 };
+
+	SDL_ShaderCross_GraphicsShaderMetadata *metadata = SDL_ShaderCross_ReflectGraphicsSPIRV((u8 *)bytecode, bytecode_size, 0);
+
+	if (!metadata) {
+		SDL_free(bytecode);
+
+		SDL_Log("SPIR-V reflection failed: %s", SDL_GetError());
+		SDL_ShaderCross_Quit();
+		return;
+	}
 
 	SDL_GPUShader *shader = SDL_ShaderCross_CompileGraphicsShaderFromSPIRV(device, &spirv_info, &metadata->resource_info, 0);
 
 	if (!shader) {
+		SDL_free(bytecode);
+		SDL_free(metadata);
+
 		SDL_Log("HLSL compilation failed: %s", SDL_GetError());
 		SDL_ShaderCross_Quit();
 		return;
@@ -47,6 +67,9 @@ float4 vertex(VertexInput input) : SV_Position
 	SDL_Log("  Storage textures: %u", metadata->resource_info.num_storage_textures);
 	SDL_Log("  Storage buffers:  %u", metadata->resource_info.num_storage_buffers);
 	SDL_Log("  Uniform buffers:  %u", metadata->resource_info.num_uniform_buffers);
+
+	SDL_free(bytecode);
+	SDL_free(metadata);
 
 	SDL_ReleaseGPUShader(device, shader);
 	SDL_Log("Shader released cleanly.");
