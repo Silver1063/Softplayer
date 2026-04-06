@@ -3,7 +3,7 @@
 #include <cmath>
 
 vec3::vec3() : x(0.0), y(0.0), z(0.0) {}
-vec3::vec3(f64 x, f64 y, f64 z) : x(x), y(y), z(z) {}
+vec3::vec3(f32 x, f32 y, f32 z) : x(x), y(y), z(z) {}
 vec3::vec3(const vec3 &that) : x(that.x), y(that.y), z(that.z) {}
 vec3::~vec3() {}
 
@@ -39,7 +39,7 @@ vec3 vec3::operator*(const vec3 &that) const {
 			this->z * that.z);
 }
 
-vec3 vec3::operator*(f64 that) const {
+vec3 vec3::operator*(f32 that) const {
 	return vec3(
 			this->x * that,
 			this->y * that,
@@ -53,7 +53,7 @@ vec3 vec3::operator/(const vec3 &that) const {
 			this->z / that.z);
 }
 
-vec3 vec3::operator/(f64 that) const {
+vec3 vec3::operator/(f32 that) const {
 	return vec3(
 			this->x / that,
 			this->y / that,
@@ -67,7 +67,7 @@ vec3 vec3::abs() const {
 			std::abs(this->z));
 }
 
-f64 vec3::angle(const vec3 &that) const {
+f32 vec3::angle(const vec3 &that) const {
 	return std::atan2(this->cross(that).length(), this->dot(that));
 }
 
@@ -93,15 +93,15 @@ vec3 vec3::direction(const vec3 &that) const {
 	return (that - *this).normalized();
 }
 
-f64 vec3::distance(const vec3 &that) const {
+f32 vec3::distance(const vec3 &that) const {
 	return (that - *this).length();
 }
 
-f64 vec3::distance_squared(const vec3 &that) const {
+f32 vec3::distance_squared(const vec3 &that) const {
 	return (that - *this).length_squared();
 }
 
-f64 vec3::dot(const vec3 &that) const {
+f32 vec3::dot(const vec3 &that) const {
 	return this->x * that.x + this->y * that.y + this->z * that.z;
 }
 
@@ -119,15 +119,15 @@ vec3 vec3::inverse() const {
 			1.0 / this->z);
 }
 
-f64 vec3::length() const {
+f32 vec3::length() const {
 	return std::sqrt(this->length_squared());
 }
 
-f64 vec3::length_squared() const {
+f32 vec3::length_squared() const {
 	return this->x * this->x + this->y * this->y + this->z * this->z;
 }
 
-vec3 vec3::lerp(const vec3 &that, f64 t) const {
+vec3 vec3::lerp(const vec3 &that, f32 t) const {
 	return vec3(
 			std::lerp(this->x, that.x, t),
 			std::lerp(this->y, that.y, t),
@@ -148,13 +148,13 @@ vec3 vec3::min(const vec3 &that) const {
 			std::fmin(this->z, that.z));
 }
 
-vec3 vec3::move(const vec3 &that, f64 delta) const {
+vec3 vec3::move(const vec3 &that, f32 delta) const {
 	// come back later lol
 	return vec3();
 }
 
 vec3 vec3::normalized() const {
-	f64 l = this->length();
+	f32 l = this->length();
 	if (l <= 0.0) {
 		return vec3(0.0, 0.0, 0.0);
 	}
@@ -164,9 +164,9 @@ vec3 vec3::normalized() const {
 //mat3 outer(const vec3 &that) const;
 
 vec3 vec3::project(const vec3 &that) const {
-	f64 dot_product = this->dot(that);
-	f64 that_length_squared = that.length_squared();
-	if (that_length_squared <= F64_EPSILON) {
+	f32 dot_product = this->dot(that);
+	f32 that_length_squared = that.length_squared();
+	if (that_length_squared <= f32_EPSILON) {
 		return vec3(0.0, 0.0, 0.0);
 	}
 	return that * (dot_product / that_length_squared);
@@ -176,7 +176,7 @@ vec3 vec3::reflect(const vec3 &normal) const {
 	//return *this - normal * (2.0 * this->dot(normal));
 }
 
-vec3 vec3::rotated(const vec3 &axis, f64 angle) const {
+vec3 vec3::rotated(const vec3 &axis, f32 angle) const {
 	// come back later lol
 	return vec3();
 }
@@ -189,7 +189,7 @@ vec3 vec3::sign() const {
 	return vec3(std::signbit(x) ? -1.0 : 1.0, std::signbit(y) ? -1.0 : 1.0, std::signbit(z) ? -1.0 : 1.0);
 }
 
-vec3 vec3::slerp(const vec3 &that, f64 t) const {
+vec3 vec3::slerp(const vec3 &that, f32 t) const {
 	//?
 }
 
