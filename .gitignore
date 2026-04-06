@@ -31,6 +31,6 @@
 *.out
 *.app
 
-subprojects/
+vcpkg_installed/
 build/
 imgui.ini
