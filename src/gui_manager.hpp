@@ -11,10 +11,17 @@ class GuiManager {
 private:
 	SDL_GPUDevice *device{ nullptr };
 	SDL_Window *window{ nullptr };
+	
+	ImGuiContext *context{ nullptr };
 
 	ImVec4 clear_color{ ImColor(63, 63, 63) };
-	bool show_demo_window{ true };
-	bool show_script_window{ true };
+
+	bool show_editor{ true };
+
+	
+	bool show_demo_window{ false };
+	bool show_script_window{ false };
+	bool show_settings_window{ false };
 	
 	std::string script{ "" };
 
