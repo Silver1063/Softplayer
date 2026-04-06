@@ -1,29 +1,13 @@
-#define PROJECT_NAME "Softplayer"
-
-#define NS_PER_SEC 1000000000
-
 #define SDL_MAIN_USE_CALLBACKS
-#include <SDL3/SDL.h>
+
 #include <SDL3/SDL_main.h>
 
-#include "types.hpp"
-#include "gui_manager.hpp"
-#include "script_manager.hpp"
+#include "main.hpp"
 #include "shader.hpp"
 
-struct AppState {
-	GuiManager *gui_manager{ nullptr };
-	ScriptManager *script_manager{ nullptr };
-
-	SDL_Window *window{ nullptr };
-	SDL_GPUDevice *device{ nullptr };
-
-	u64 last_tick{ 0 };
-	u64 last_fixed{ 0 };
-	u64 accumulator{ 0 };
-	u64 fixed_delta{ NS_PER_SEC / 60 };
-	u64 min_delta{ NS_PER_SEC / 240 }; // Default hz limit
-};
+f64 get_avg_frame_time() {
+	return 1.0;
+}
 
 SDL_AppResult SDL_AppInit(void **appstate, i32 argc, char *argv[]) {
 	AppState *state = new AppState;
@@ -50,12 +34,14 @@ SDL_AppResult SDL_AppInit(void **appstate, i32 argc, char *argv[]) {
 		return SDL_APP_FAILURE;
 	}
 
-	SDL_GPUShaderFormat format_flags = SDL_GPU_SHADERFORMAT_SPIRV;
+	SDL_GPUShaderFormat format_flags = SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL;
 	state->device = SDL_CreateGPUDevice(format_flags, true, NULL);
 	if (!state->device) {
 		SDL_Log("%s", SDL_GetError());
 		return SDL_APP_FAILURE;
 	}
+
+	SDL_Log("GPU Driver: %s", SDL_GetGPUDeviceDriver(state->device));
 
 	result = SDL_ClaimWindowForGPUDevice(state->device, state->window);
 	if (!result) {
@@ -63,29 +49,16 @@ SDL_AppResult SDL_AppInit(void **appstate, i32 argc, char *argv[]) {
 		return SDL_APP_FAILURE;
 	}
 
-	// SDL_SetGPUSwapchainParameters(state->device, state->window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
-
 	state->gui_manager = new GuiManager(state->device, state->window);
 	state->gui_manager->start();
 
 	state->script_manager = new ScriptManager();
 	state->script_manager->start();
 
-	std::string test_script = R"(
-void main() {
-	string test = "Joe Mama";
-	
-	// println(test);
-	print(test + " yes");
-	print(test + " noes");
-	
-})";
-	state->script_manager->run(test_script);
-
 	state->last_tick = SDL_GetTicksNS();
 	state->last_fixed = SDL_GetTicksNS();
-	
-	shader_test(state->device);
+
+	// shader_test(state->device);
 
 	return SDL_APP_CONTINUE;
 }
@@ -93,7 +66,7 @@ void main() {
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
 	AppState *state = static_cast<AppState *>(appstate);
 
-	if (event->type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
+	if (event->type == SDL_EVENT_QUIT) {
 		return SDL_APP_SUCCESS;
 	}
 
@@ -113,9 +86,10 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
 	// fixed_iterate(dt) calls
 	while (state->accumulator >= state->fixed_delta) {
-		u64 real = tick - state->last_fixed;
 		// fixed iterate
 		state->accumulator -= state->fixed_delta;
+		f64 dt = state->fixed_delta * 1e-9;
+		// fixed_iterate(dt)
 	}
 
 	// iterate(dt) calls
@@ -125,6 +99,11 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
 	// frame limiting
 	u64 frame_end = SDL_GetTicksNS();
+    u64 frame_time = frame_end - tick;  // total time this frame actually took
+
+    if (frame_time < state->min_delta) {
+        SDL_DelayNS(state->min_delta - frame_time);
+    }
 
 	return SDL_APP_CONTINUE;
 }
@@ -140,6 +119,9 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result) {
 	SDL_ReleaseWindowFromGPUDevice(state->device, state->window);
 	SDL_DestroyGPUDevice(state->device);
 	SDL_DestroyWindow(state->window);
+
+	delete state->gui_manager;
+	delete state->script_manager;
 
 	delete state;
 
